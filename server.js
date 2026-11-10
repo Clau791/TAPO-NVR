@@ -401,6 +401,28 @@ async function retention() {
         durCache.delete(d);
       }
     }
+    // Limita maxima a arhivei (GB): sterge cele mai vechi fisiere cat timp arhiva o depaseste
+    const maxArchive = Number(cfg.maxArchiveGB) || 0;
+    if (maxArchive > 0) {
+      let g = 0;
+      while ((await dirSize(REC_DIR)) / 1024 ** 3 > maxArchive && g++ < 2000) {
+        const ds = (await fsp.readdir(REC_DIR)).filter((n) => /^\d{4}-\d{2}-\d{2}$/.test(n)).sort();
+        let del = false;
+        for (const d of ds) {
+          const files = (await fsp.readdir(path.join(REC_DIR, d))).filter((n) => FILE_RE.test(n)).sort();
+          if (!files.length) {
+            if (d < dayStr(new Date())) await fsp.rm(path.join(REC_DIR, d), { recursive: true, force: true });
+            continue;
+          }
+          if (d === dayStr(new Date()) && files.length <= 1) break;
+          log(`[retentie] arhiva peste ${maxArchive} GB - sterg ${d}/${files[0]}`);
+          await fsp.unlink(path.join(REC_DIR, d, files[0]));
+          del = true;
+          break;
+        }
+        if (!del) break;
+      }
+    }
     const minFree = Number(cfg.minFreeGB) || 10;
     let guard = 0;
     while ((await freeGB()) < minFree && guard++ < 500) {

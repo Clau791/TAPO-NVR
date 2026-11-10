@@ -17,6 +17,7 @@
   "segmentSeconds": 300,
   "audio": true,
   "retentionDays": 30,
+  "maxArchiveGB": 20,
   "minFreeGB": 20,
   "web": {
     "port": 8080,

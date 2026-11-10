@@ -24,6 +24,7 @@ aplicația Tapo → camera → ⚙ Setări → **Setări avansate → Contul cam
 | `dataDir` | unde se salvează (implicit `C:\TapoNVR`, **nu** în OneDrive) |
 | `segmentSeconds` | lungimea unui fișier (300 s) |
 | `retentionDays` | zilele păstrate; mai vechi se șterg automat |
+| `maxArchiveGB` | dimensiunea maximă a arhivei (20 GB); la depășire se șterg cele mai vechi fișiere |
 | `minFreeGB` | dacă spațiul liber scade sub prag se șterg cele mai vechi fișiere |
 | `web.port` | portul clientului web (8080) |
 | `web.username/password` | opțional: parolă pentru clientul web (recomandat dacă e accesibil din rețea) |
