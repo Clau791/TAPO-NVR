@@ -1,0 +1,6 @@
+# Configuratia locala contine parole (camera, cont Tapo, utilizatori web) - nu se urca pe GitHub.
+# Porneste de la config.example.json.
+config.json
+*.pem
+*.log
+CREDENTIALE*.txt

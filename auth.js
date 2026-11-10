@@ -59,7 +59,8 @@ class Auth {
     return f && f.until > Date.now() ? Math.ceil((f.until - Date.now()) / 60000) : 0;
   }
   // returneaza { ok, cookie } sau { ok:false, error, status }
-  login(ip, username, password) {
+  // secure=true cand browserul vede conexiunea ca HTTPS (direct sau prin Tailscale Funnel)
+  login(ip, username, password, secure = true) {
     const mins = this.blockedFor(ip);
     if (mins) return { ok: false, status: 429, error: `Prea multe încercări. Reîncearcă peste ${mins} min.` };
     const user = this.users.find((u) => u.username === String(username || '').trim());
@@ -78,12 +79,12 @@ class Auth {
     this.sessions.set(token, { user: user.username, expires: Date.now() + SESSION_DAYS * 86400e3 });
     this.save();
     this.log(`[auth] ${user.username} autentificat de la ${ip}`);
-    return { ok: true, cookie: `${COOKIE}=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_DAYS * 86400}` };
+    return { ok: true, cookie: `${COOKIE}=${token}; HttpOnly;${secure ? ' Secure;' : ''} SameSite=Lax; Path=/; Max-Age=${SESSION_DAYS * 86400}` };
   }
-  logout(req) {
+  logout(req, secure = true) {
     const t = Auth.parseCookies(req)[COOKIE];
     if (t && this.sessions.delete(t)) this.save();
-    return `${COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
+    return `${COOKIE}=; HttpOnly;${secure ? ' Secure;' : ''} SameSite=Lax; Path=/; Max-Age=0`;
   }
 }
 

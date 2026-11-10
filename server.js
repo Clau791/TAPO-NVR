@@ -216,8 +216,6 @@ class Supervised {
   }
 }
 
-// Curatam folderul live la pornire
-for (const f of fs.readdirSync(LIVE_DIR)) { try { fs.unlinkSync(path.join(LIVE_DIR, f)); } catch { } }
 
 const workers = [];
 let recorder;
@@ -484,7 +482,10 @@ function clientIp(req) {
   if (isLoopback(sock) && xff) return String(xff).split(',')[0].trim().replace(/^::ffff:/, '') || 'proxy';
   return sock;
 }
-const viaProxy = (req) => !!req.headers['x-forwarded-for'] || !!req.headers['tailscale-funnel-request'];
+// Browserul vede HTTPS: TLS direct sau prin Tailscale Funnel / proxy local cu X-Forwarded-Proto
+const isHttpsClient = (req) => !!req.socket.encrypted || !!req.headers['tailscale-funnel-request']
+  || String(req.headers['x-forwarded-proto'] || '').toLowerCase() === 'https';
+const viaProxy = (req) =>!!req.headers['x-forwarded-for'] || !!req.headers['tailscale-funnel-request'];
 const isPrivate = (ip) => isLoopback(ip) || /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|fe80:|fc|fd)/i.test(ip);
 
 // true = poate continua; altfel raspunsul a fost deja trimis
@@ -493,14 +494,14 @@ async function checkAuth(req, res, p) {
   if (p === '/login' && req.method === 'POST') {
     let b = {};
     try { b = await readBody(req); } catch { }
-    const r = auth.login(ip, b.username, b.password);
+    const r = auth.login(ip, b.username, b.password, isHttpsClient(req));
     if (!r.ok) { sendJSON(res, { error: r.error }, r.status); return false; }
     res.writeHead(200, { 'Set-Cookie': r.cookie, 'Content-Type': 'application/json' });
     res.end('{"ok":true}');
     return false;
   }
   if (p === '/logout') {
-    res.writeHead(302, { 'Set-Cookie': auth.logout(req), Location: '/login.html' });
+    res.writeHead(302, { 'Set-Cookie': auth.logout(req, isHttpsClient(req)), Location: '/login.html' });
     res.end();
     return false;
   }
@@ -798,15 +799,32 @@ if (LOCAL_HTTP_PORT) {
     log(`Port local pentru proxy (Tailscale Funnel): http://127.0.0.1:${LOCAL_HTTP_PORT}`);
   }).on('error', (e) => log('[http-local] ' + e.message));
 }
+// Portul web e si "lacatul" aplicatiei: daca e ocupat, o alta instanta (de ex. serviciul TapoNVR)
+// ruleaza deja, asa ca iesim inainte sa pornim inregistrarea (doua ffmpeg-uri s-ar bate pe aceleasi fisiere).
+server.on('error', (e) => {
+  if (e.code === 'EADDRINUSE') {
+    const msg = `Portul ${WEB_PORT} este deja folosit: Tapo NVR ruleaza deja (probabil ca serviciul TapoNVR). `
+      + 'Aceasta copie se inchide. Deschide https://localhost:' + WEB_PORT + ' sau opreste serviciul inainte de npm start.';
+    console.error('\n' + msg + '\n');
+    log('[pornire] ' + msg);
+    process.exit(1);
+  }
+  log('[http] eroare server: ' + e.message);
+});
 server.listen(WEB_PORT, web.host || '0.0.0.0', () => {
   log(`Tapo NVR pornit. Client web: ${useHttps ? 'https' : 'http'}://localhost:${WEB_PORT}  | date: ${DATA_DIR}`
     + ` | autentificare: ${auth.enabled ? auth.users.length + ' utilizator(i)' : 'DOAR RETEA LOCALA (niciun utilizator)'}`);
+  startBackground();
 });
 
-ensureDayDirs();
-workers.forEach((w) => w.start());
-if (TALK_ENABLED) startGo2rtc();
-else log('[talk] vorbirea prin camera dezactivata: ' + (!cam.cloudPassword ? 'lipseste camera.cloudPassword' : 'go2rtc.exe lipseste'));
+function startBackground() {
+  // Curatam folderul live (doar dupa ce stim ca suntem singura instanta)
+  for (const f of fs.readdirSync(LIVE_DIR)) { try { fs.unlinkSync(path.join(LIVE_DIR, f)); } catch { } }
+  ensureDayDirs();
+  workers.forEach((w) => w.start());
+  if (TALK_ENABLED) startGo2rtc();
+  else log('[talk] vorbirea prin camera dezactivata: ' + (!cam.cloudPassword ? 'lipseste camera.cloudPassword' : 'go2rtc.exe lipseste'));
+}
 setInterval(ensureDayDirs, 60 * 1000);
 setInterval(() => workers.forEach((w) => w.checkHealth().catch(() => { })), 15 * 1000);
 setInterval(retention, 10 * 60 * 1000);
