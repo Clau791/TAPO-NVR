@@ -17,7 +17,7 @@ const cfg = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''));
 cfg.web = cfg.web || {};
 cfg.web.users = (cfg.web.users || []).filter((u) => u.username !== user);
 if (pass !== '--remove') {
-  if (pass.length < 10) { console.log('Parola trebuie sa aiba minim 10 caractere.'); process.exit(1); }
+  if (pass.length < 1) { console.log('Parola nu poate fi goala.'); process.exit(1); }
   cfg.web.users.push({ username: user, ...hashPassword(pass) });
 }
 delete cfg.web.username; delete cfg.web.password; // vechiul Basic Auth nu mai e folosit
