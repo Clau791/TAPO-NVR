@@ -1,0 +1,27 @@
+{
+  "camera": {
+    "host": "192.168.100.213",
+    "port": 554,
+    "username": "CONTUL_CAMEREI",
+    "password": "PAROLA_CAMEREI",
+    "recordStream": "stream1",
+    "liveStream": "stream1",
+    "cloudPassword": "",
+    "onvifPort": 2020,
+    "ptzInvertPan": true,
+    "ptzInvertTilt": false
+  },
+  "ffmpegPath": "ffmpeg",
+  "ffprobePath": "ffprobe",
+  "dataDir": "C:\\TapoNVR",
+  "segmentSeconds": 300,
+  "audio": true,
+  "retentionDays": 30,
+  "minFreeGB": 20,
+  "web": {
+    "port": 8080,
+    "host": "0.0.0.0",
+    "username": "",
+    "password": ""
+  }
+}

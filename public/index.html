@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tapo NVR</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' fill='%23e5484d'/></svg>">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="dot" id="recDot"></span>
+      <strong>Tapo C230</strong><span class="muted">· NVR</span>
+    </div>
+    <nav>
+      <button class="tab active" data-tab="live">Live</button>
+      <button class="tab" data-tab="archive">Arhivă</button>
+    </nav>
+    <div class="status" id="statusText">Se conectează…</div>
+    <a class="btn" href="/logout" title="Deconectare">⎋ Ieșire</a>
+  </header>
+
+  <main>
+    <!-- LIVE -->
+    <section id="tab-live" class="panel active">
+      <div class="player">
+        <video id="liveVideo" muted autoplay playsinline></video>
+        <div class="overlay" id="liveOverlay">Se încarcă fluxul live…</div>
+        <div class="badge live-badge">● LIVE</div>
+        <div class="clock" id="liveClock"></div>
+      </div>
+      <div class="live-bottom">
+        <div class="controls">
+          <button id="liveMute">🔇 Sunet</button>
+          <button id="talkBtn" class="talk" title="Ține apăsat pentru a vorbi prin difuzorul camerei">🎙 Vorbește</button>
+          <button id="liveSnap">📷 Captură</button>
+          <button id="liveFull">⛶ Ecran complet</button>
+          <button id="liveReload">↻ Reconectare</button>
+        </div>
+
+        <div class="ptz">
+          <div class="pad" id="ptzPad">
+            <span></span><button data-dir="0,1" title="Sus">▲</button><span></span>
+            <button data-dir="-1,0" title="Stânga">◀</button><span class="pad-center">PTZ</span><button data-dir="1,0" title="Dreapta">▶</button>
+            <span></span><button data-dir="0,-1" title="Jos">▼</button><span></span>
+          </div>
+          <div class="ptz-side">
+            <label>Pas
+              <select id="ptzStep">
+                <option value="0.03">fin</option>
+                <option value="0.08" selected>mediu</option>
+                <option value="0.2">mare</option>
+              </select>
+            </label>
+            <label>Poziții
+              <select id="presetSelect"><option value="">—</option></select>
+            </label>
+            <div class="row">
+              <button id="presetGo">Mergi</button>
+              <button id="presetSave" title="Salvează poziția curentă">＋ Salvează</button>
+              <button id="presetDel" title="Șterge poziția selectată">🗑</button>
+            </div>
+            <div class="ptz-msg" id="ptzMsg">Click = pas · ține apăsat = mișcare continuă · săgețile tastaturii</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARHIVA -->
+    <section id="tab-archive" class="panel">
+      <div class="toolbar">
+        <button id="dayPrev" title="Ziua anterioară">‹</button>
+        <select id="daySelect"></select>
+        <button id="dayNext" title="Ziua următoare">›</button>
+        <input type="time" id="jumpTime" step="1" title="Sari la ora">
+        <button id="jumpBtn">Sari</button>
+        <span class="spacer"></span>
+        <label>Viteză
+          <select id="speed">
+            <option value="1">1×</option><option value="2">2×</option>
+            <option value="4">4×</option><option value="8">8×</option><option value="16">16×</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="player">
+        <video id="recVideo" controls playsinline></video>
+        <div class="overlay" id="recOverlay">Alege un moment pe linia de timp.</div>
+        <div class="clock" id="recClock"></div>
+      </div>
+
+      <div class="timeline-wrap">
+        <div class="zoom">
+          <button id="zoomOut">−</button><span id="zoomLabel">24 h</span><button id="zoomIn">+</button>
+        </div>
+        <div class="timeline" id="timeline">
+          <div class="ticks" id="ticks"></div>
+          <div class="segments" id="segments"></div>
+          <div class="playhead" id="playhead"></div>
+          <div class="hover" id="hoverTip"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="prevSeg">⏮ Segment anterior</button>
+        <button id="nextSeg">Segment următor ⏭</button>
+        <a id="downloadSeg" class="btn" href="#" download>⬇ Descarcă segmentul</a>
+        <button id="recSnap">📷 Captură</button>
+      </div>
+
+      <details class="seglist">
+        <summary>Lista segmentelor (<span id="segCount">0</span>)</summary>
+        <table><thead><tr><th>Început</th><th>Durată</th><th>Mărime</th><th></th></tr></thead><tbody id="segTable"></tbody></table>
+      </details>
+    </section>
+  </main>
+
+  <footer id="footer"></footer>
+
+  <script src="/vendor/hls.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

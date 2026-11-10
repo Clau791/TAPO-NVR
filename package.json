@@ -1,0 +1,16 @@
+{
+  "name": "tapo-nvr",
+  "version": "1.0.0",
+  "description": "Inregistrare non-stop + client web (live si arhiva) pentru camera TP-Link Tapo C230",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.15"
+  },
+  "dependencies": {
+    "hls.js": "^1.5.20"
+  }
+}

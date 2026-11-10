@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tapo NVR – Autentificare</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .login { max-width: 340px; margin: 12vh auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 24px; }
+    .login h1 { font-size: 18px; margin: 0 0 16px; display: flex; gap: 8px; align-items: center; }
+    .login label { display: block; color: var(--muted); margin: 12px 0 4px; }
+    .login input { width: 100%; padding: 10px; }
+    .login button { width: 100%; margin-top: 18px; padding: 10px; background: var(--accent); border-color: var(--accent); color: #fff; }
+    .login .err { color: var(--rec); min-height: 1.4em; margin-top: 10px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <form class="login" id="f">
+    <h1><span class="dot on"></span> Tapo NVR</h1>
+    <label for="u">Utilizator</label>
+    <input id="u" name="username" autocomplete="username" required autofocus>
+    <label for="p">Parolă</label>
+    <input id="p" name="password" type="password" autocomplete="current-password" required>
+    <button type="submit">Intră</button>
+    <div class="err" id="err"></div>
+  </form>
+  <script>
+    document.getElementById('f').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('err');
+      err.textContent = '';
+      const r = await fetch('/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: e.target.username.value, password: e.target.password.value }),
+      });
+      if (r.ok) { location.href = '/' + (location.hash || ''); return; }
+      err.textContent = (await r.json().catch(() => ({}))).error || 'Eroare';
+    });
+  </script>
+</body>
+</html>
